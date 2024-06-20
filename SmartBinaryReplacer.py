@@ -42,7 +42,7 @@ files_info = {
     },
     'decimal_two_digit': {
         'path': os.path.join(directory_path, 'x=10.5.pl3'),
-        'old_value': b'x=15.5.txp'
+        'old_value': b'x=10.5.txp'
     }
 }
 
