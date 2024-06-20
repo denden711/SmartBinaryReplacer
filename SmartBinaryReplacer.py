@@ -52,14 +52,17 @@ def read_file_content(file_path):
         if not os.path.exists(file_path):
             logger.warning(f"ファイルが見つかりません: {file_path}")
             return None
-        else:
-            with open(file_path, 'rb') as file:
-                content = file.read()
-                logger.info(f"元ファイルの内容を読み込みました: {file_path}")
-                return content
+        with open(file_path, 'rb') as file:
+            content = file.read()
+            logger.info(f"元ファイルの内容を読み込みました: {file_path}")
+            return content
+    except FileNotFoundError:
+        logger.error(f"ファイルが見つかりません: {file_path}")
+    except PermissionError:
+        logger.error(f"ファイルの読み込み許可がありません: {file_path}")
     except Exception as e:
         logger.error(f"ファイルの読み込み中にエラーが発生しました: {file_path} - {str(e)}")
-        return None
+    return None
 
 # 各元ファイルの内容を読み込む
 file_contents = {}
@@ -72,6 +75,14 @@ for key, info in files_info.items():
 try:
     all_files = os.listdir(directory_path)
     logger.info(f"ディレクトリ内のファイル一覧を取得しました: {all_files}")
+except FileNotFoundError:
+    logger.error("ディレクトリが見つかりませんでした。")
+    print("ディレクトリが見つかりませんでした。プログラムを終了します。")
+    exit()
+except PermissionError:
+    logger.error("ディレクトリの読み取り許可がありません。")
+    print("ディレクトリの読み取り許可がありません。プログラムを終了します。")
+    exit()
 except Exception as e:
     logger.error(f"ディレクトリ内のファイル一覧を取得中にエラーが発生しました: {str(e)}")
     print("ディレクトリ内のファイル一覧を取得中にエラーが発生しました。プログラムを終了します。")
@@ -175,6 +186,10 @@ for filename in all_files:
 
         else:
             logger.info(f"数字を含まないファイル、または条件に合わないファイルをスキップしました: {filename}")
+    except FileNotFoundError:
+        logger.error(f"ファイルが見つかりません: {filename}")
+    except PermissionError:
+        logger.error(f"ファイルの処理許可がありません: {filename}")
     except Exception as e:
         logger.error(f"ファイル処理中にエラーが発生しました: {filename} - {str(e)}")
 
