@@ -36,13 +36,21 @@ files_info = {
         'path': os.path.join(directory_path, 'x=10.pl3'),
         'old_value': b'x=10.txp'
     },
+    'three_digit': {
+        'path': os.path.join(directory_path, 'x=100.pl3'),
+        'old_value': b'x=100.txp'
+    },
     'decimal_one_digit': {
         'path': os.path.join(directory_path, 'x=0.5.pl3'),
         'old_value': b'x=0.5.txp'
     },
     'decimal_two_digit': {
-        'path': os.path.join(directory_path, 'x=10.5.pl3'),
-        'old_value': b'x=10.5.txp'
+        'path': os.path.join(directory_path, 'x=15.5.pl3'),
+        'old_value': b'x=15.5.txp'
+    },
+    'decimal_three_digit': {
+        'path': os.path.join(directory_path, 'x=100.5.pl3'),
+        'old_value': b'x=100.5.txp'
     }
 }
 
@@ -88,7 +96,7 @@ except Exception as e:
     print("ディレクトリ内のファイル一覧を取得中にエラーが発生しました。プログラムを終了します。")
     exit()
 
-# ファイル名から一桁、二桁、小数点を含む一桁、二桁の数字を抽出し、対応する値に置き換える
+# ファイル名から一桁、二桁、三桁、小数点を含む一桁、二桁、三桁の数字を抽出し、対応する値に置き換える
 for filename in all_files:
     if filename in [os.path.basename(info['path']) for info in files_info.values()]:
         logger.info(f"元ファイルをスキップしました: {filename}")
@@ -97,8 +105,10 @@ for filename in all_files:
     try:
         match_one_digit = re.match(r'x=(\d)\.pl3', filename)  # 一桁の数字にマッチ
         match_two_digit = re.match(r'x=(\d{2})\.pl3', filename)  # 二桁の数字にマッチ
+        match_three_digit = re.match(r'x=(\d{3})\.pl3', filename)  # 三桁の数字にマッチ
         match_decimal_one_digit = re.match(r'x=(\d\.\d)\.pl3', filename)  # 小数点を含む一桁の数字にマッチ
         match_decimal_two_digit = re.match(r'x=(\d{2}\.\d)\.pl3', filename)  # 小数点を含む二桁の数字にマッチ
+        match_decimal_three_digit = re.match(r'x=(\d{3}\.\d)\.pl3', filename)  # 小数点を含む三桁の数字にマッチ
 
         if match_one_digit and 'one_digit' in file_contents:
             number = match_one_digit.group(1)
@@ -142,6 +152,27 @@ for filename in all_files:
                 new_file.write(new_content)
             logger.info(f"新しいファイルを作成しました: {new_file_path}")
 
+        elif match_three_digit and 'three_digit' in file_contents:
+            number = match_three_digit.group(1)
+            logger.info(f"ファイル名から抽出した三桁の数字: {number}")
+
+            # 置き換える新しい値を作成
+            old_value = files_info['three_digit']['old_value']
+            new_value = f'x={number}.txp'.encode()
+            new_binary_value = f'%Ix@%N%F = {number} mm'.encode()
+
+            # 'x=100.txp' を 'x=三桁の数字.txp' に置き換える
+            new_content = file_contents['three_digit'].replace(old_value, new_value)
+            # バイナリデータ内の文字列を置換
+            new_content = new_content.replace(b'%Ix@%N%F = 100 mm', new_binary_value)
+            logger.info(f"置き換え完了: {old_value} -> {new_value}, %Ix@%N%F = 100 mm -> {new_binary_value}")
+
+            # 変更後のデータを新しいファイルに書き込む
+            new_file_path = os.path.join(directory_path, f'x={number}.pl3')
+            with open(new_file_path, 'wb') as new_file:
+                new_file.write(new_content)
+            logger.info(f"新しいファイルを作成しました: {new_file_path}")
+
         elif match_decimal_one_digit and 'decimal_one_digit' in file_contents:
             number = match_decimal_one_digit.group(1)
             logger.info(f"ファイル名から抽出した小数点を含む一桁の数字: {number}")
@@ -177,6 +208,27 @@ for filename in all_files:
             # バイナリデータ内の文字列を置換
             new_content = new_content.replace(b'%Ix@%N%F = 10.5 mm', new_binary_value)
             logger.info(f"置き換え完了: {old_value} -> {new_value}, %Ix@%N%F = 10.5 mm -> {new_binary_value}")
+
+            # 変更後のデータを新しいファイルに書き込む
+            new_file_path = os.path.join(directory_path, f'x={number}.pl3')
+            with open(new_file_path, 'wb') as new_file:
+                new_file.write(new_content)
+            logger.info(f"新しいファイルを作成しました: {new_file_path}")
+
+        elif match_decimal_three_digit and 'decimal_three_digit' in file_contents:
+            number = match_decimal_three_digit.group(1)
+            logger.info(f"ファイル名から抽出した小数点を含む三桁の数字: {number}")
+
+            # 置き換える新しい値を作成
+            old_value = files_info['decimal_three_digit']['old_value']
+            new_value = f'x={number}.txp'.encode()
+            new_binary_value = f'%Ix@%N%F = {number} mm'.encode()
+
+            # 'x=100.5.txp' を 'x=小数点を含む三桁の数字.txp' に置き換える
+            new_content = file_contents['decimal_three_digit'].replace(old_value, new_value)
+            # バイナリデータ内の文字列を置換
+            new_content = new_content.replace(b'%Ix@%N%F = 100.5 mm', new_binary_value)
+            logger.info(f"置き換え完了: {old_value} -> {new_value}, %Ix@%N%F = 100.5 mm -> {new_binary_value}")
 
             # 変更後のデータを新しいファイルに書き込む
             new_file_path = os.path.join(directory_path, f'x={number}.pl3')
